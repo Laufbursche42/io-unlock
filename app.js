@@ -796,8 +796,8 @@ function updateGates() {
   { const c = $('advanced-card');  if (c) c.hidden = !p.advanced.length  || !conn; }
   { const c = $('boost-card');     if (c) c.hidden = !p.boost            || !conn; }
   { const c = $('raw-card');       if (c) c.hidden = !p.ble              || !conn; }
-  { const c = $('keys-card');      if (c) c.hidden = !p.ble              || !conn; }
-  { const c = $('schema-card');    if (c) c.hidden = !p.ble              || !conn; }
+  { const c = $('keys-card');      if (c) c.hidden = !p.ble; }
+  { const c = $('schema-card');    if (c) c.hidden = !p.ble; }
   { const el = $('preconnect-hint'); if (el) el.hidden = conn || !p.ble; }
   const ready = sessionReady();
   document.querySelectorAll('.dp-row').forEach((row) => {

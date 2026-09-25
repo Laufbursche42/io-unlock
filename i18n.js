@@ -11,14 +11,12 @@ window.I18N = {
     langGroup: "Sprache",
     themeToLight: "Auf helle Darstellung umschalten",
     themeToDark: "Auf dunkle Darstellung umschalten",
-    movedHint: "Hinweis: Dieses Werkzeug wandert nach <a href=\"https://lb-tool-web.pages.dev/\" target=\"_blank\" rel=\"noopener\">lb-tool-web.pages.dev</a>, das mehrere Roller unter einem Dach bündelt.",
     platformNote: "Dieser Browser kann kein Web Bluetooth. Nutze Chrome oder Edge (Android/Desktop) oder Bluefy (iOS).",
-    bannerHtml: "<b>Hinweis: von Haus aus tunt diese Seite deinen Scooter nicht.</b> Dies ist eine Machbarkeitsstudie, die sich mit dem Tuya-BLE-Protokoll verbindet, es ausliest und vollständig belegt. <b>Schreiben ist gesperrt, nicht entfernt:</b> Tuning geht erst, wenn du den geräteindividuellen localKey und das dpId-Schema aus der Tuya-Cloud lieferst - beides ist cloud- und geräteseitig vergeben und steckt nicht in diesem Tool. Bis dahin liest und decodiert die Seite nur; jeder Schreibvorgang bleibt mit seiner Begründung ausgegraut. <a href=\"#\" data-open-disclaimer>Haftungsausschluss lesen</a>.",
 
     s1Title: "So fängt es an",
     sub: "Live über Web Bluetooth mit einem IO-HAWK-E-Scooter reden der über die Tuya-App läuft. Läuft in Chrome oder Edge (Android/Desktop) und in Bluefy (iOS). Nichts verlässt dein Gerät.",
     startHintGuide: "Neu hier? In der <a href=\"GUIDE.de.md\" data-doc=\"GUIDE\" data-t=\"footGuide\">Anleitung</a> steht jeder Schritt und die ehrliche Einordnung was heute schon geht und was das Gerät noch braucht.",
-    expWarn: "Machbarkeitsstudie. Diese Seite zeigt was das Tuya-BLE-Protokoll des IO HAWK technisch möglich macht - sie ist kein fertiges Produkt. Es gibt keine Gewährleistung. Alles auf eigenes Risiko. <a href=\"#\" data-open-disclaimer>Haftungsausschluss lesen</a>.",
+    expWarn: "Machbarkeitsstudie. Diese Seite zeigt, was das Tuya-BLE-Protokoll des IO HAWK technisch möglich macht - sie ist kein fertiges Produkt und tunt von Haus aus nichts: Schreiben ist gesperrt (nicht entfernt) und wird erst frei, wenn du den geräteindividuellen localKey und das dpId-Schema aus der Tuya-Cloud lieferst; beides ist cloud- und geräteseitig vergeben und steckt nicht im Tool. Bis dahin liest und decodiert die Seite nur. Keine Gewährleistung, alles auf eigenes Risiko. <a href=\"#\" data-open-disclaimer>Haftungsausschluss lesen</a>.",
     ownDevice: "Nur am eigenen Fahrzeug auf privatem Gelände. Das Anheben der Höchstgeschwindigkeit hebt die Drossel auf - die ABE erlischt und der Betrieb auf öffentlichen Wegen ist dann nicht erlaubt.",
 
     modelTitle: "Modell und Verbindung",
@@ -50,7 +48,7 @@ window.I18N = {
     btnLoadSchema: "Schema laden",
     btnClearSchema: "Schema leeren",
     schemaHint: "Optional. Nach dem Verbinden erscheinen die rohen Datenpunkte deines Scooters im Log (dpId + Wert). Das Schema ist nur die Beschriftung dazu - welche dpId speed_limit oder mode ist - und kommt aus einem BLE-Mitschnitt oder dem Tuya-Cloud-Produktschema, nicht aus der App. Ohne Schema siehst du die Werte roh; Benennen und Schreiben bleibt gesperrt. Nichts wird erfunden.",
-    preconnectHint: "Verbinde zuerst deinen Scooter. Erst nach der Verbindung zeigt das Tool die Datenpunkte, Einstellungen und erweiterten Einstellungen deines Modells - vorher wird nichts eingeblendet.",
+    preconnectHint: "Verbinde deinen Scooter - danach erscheinen Live-Werte, Einstellungen und erweiterte Einstellungen. localKey, srand und Schema kannst du jederzeit eintragen (optional).",
 
     telemetryTitle: "Live-Werte",
     telemetryHint: "Nach dem Verbinden füllt der DP-Bericht diese Kacheln mit den rohen Werten. Ein Schema liefert Beschriftung und Skalierung - ohne bleibt der Wert roh, aber sichtbar.",
@@ -243,14 +241,12 @@ window.I18N = {
     langGroup: "Language",
     themeToLight: "Switch to light theme",
     themeToDark: "Switch to dark theme",
-    movedHint: "Note: this tool is moving to <a href=\"https://lb-tool-web.pages.dev/\" target=\"_blank\" rel=\"noopener\">lb-tool-web.pages.dev</a>, which brings several scooters under one roof.",
     platformNote: "This browser has no Web Bluetooth. Use Chrome or Edge (Android/desktop) or Bluefy (iOS).",
-    bannerHtml: "<b>Note: out of the box this does not tune your scooter.</b> This is a feasibility study that connects to the Tuya BLE protocol, reads it and proves it end to end. <b>Writing is gated, not disabled:</b> tuning works only once you supply the per-device localKey and the Tuya cloud dpId schema, which are cloud- and device-provisioned and are not in this tool. Until then the page only reads and decodes; every write stays greyed with its reason. <a href=\"#\" data-open-disclaimer>Read the disclaimer</a>.",
 
     s1Title: "Getting started",
     sub: "Talk live over Web Bluetooth to an IO HAWK scooter that runs on the Tuya app. Works in Chrome or Edge (Android/desktop) and Bluefy (iOS). Nothing leaves your device.",
     startHintGuide: "New here? Every step and an honest note on what already works and what still needs the device is in the <a href=\"GUIDE.en.md\" data-doc=\"GUIDE\" data-t=\"footGuide\">guide</a>.",
-    expWarn: "Feasibility study. This page shows what the Tuya BLE protocol of the IO HAWK makes possible - it is not a finished product. There is no warranty. Everything at your own risk. <a href=\"#\" data-open-disclaimer>Read the disclaimer</a>.",
+    expWarn: "Feasibility study. This page shows what the IO HAWK's Tuya BLE protocol makes possible - it is not a finished product and tunes nothing out of the box: writing is gated (not removed) and only unlocks once you supply the per-device localKey and the dpId schema from the Tuya cloud, which are cloud- and device-provisioned and not shipped in the tool. Until then the page only reads and decodes. No warranty, everything at your own risk. <a href=\"#\" data-open-disclaimer>Read the disclaimer</a>.",
     ownDevice: "Only on your own vehicle on private ground. Raising the top speed removes the throttle limit, the road approval lapses and operating it on public roads is then not allowed.",
 
     modelTitle: "Model and connection",
@@ -282,7 +278,7 @@ window.I18N = {
     btnLoadSchema: "Load schema",
     btnClearSchema: "Clear schema",
     schemaHint: "Optional. After connecting, your scooter's raw data-points appear in the log (dpId + value). The schema is only the labeling for them - which dpId is speed_limit or mode - and comes from a BLE capture or the Tuya cloud product schema, not from the app. Without it you still see the raw values; naming and writing stay locked. Nothing is invented.",
-    preconnectHint: "Connect your scooter first. Only after a link does the tool show your model's data-points, settings and advanced settings - nothing is shown before that.",
+    preconnectHint: "Connect your scooter - the live values, settings and advanced settings appear afterwards. localKey, srand and schema can be entered anytime (optional).",
 
     telemetryTitle: "Live values",
     telemetryHint: "After connecting, the DP report fills these tiles with the raw values. A schema supplies labeling and scaling - without it the value stays raw but visible.",
