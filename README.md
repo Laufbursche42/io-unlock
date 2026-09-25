@@ -4,9 +4,11 @@
 
 A single-page Web Bluetooth tool for any IO HAWK e-scooter that runs on the Tuya app (`com.iohawk.smart`). Pick your model, connect, and see the model's telemetry, settings and advanced settings. It speaks the Tuya BLE secure protocol and runs entirely in your browser. Nothing is sent to any server.
 
-> **This is a feasibility study.** It is not a finished product, but honest about what already works from static analysis and what still needs a real device or the Tuya cloud to finish. Every IO HAWK model that connects uses the same generic Tuya `ddzxc` data-point protocol; the model selector only scopes which fields are shown and labeled - it never invents a dpId, range or scaling.
+Every IO HAWK model that connects uses the same generic Tuya `ddzxc` data-point protocol; the model selector only scopes which fields are shown and labeled - it never invents a dpId, range or scaling.
 
-> **Out of the box it does not tune your scooter.** It connects, reads and proves the Tuya BLE protocol end to end; tuning and writing are gated behind the per-device localKey and the Tuya cloud dpId schema, which are cloud- and device-provisioned and are not shipped in this tool.
+> **This is a feasibility study.** It shows what the IO HAWK's Tuya BLE protocol makes possible from static analysis, not a finished product. Error-free operation is not promised and there is no warranty of any kind.
+
+> **Out of the box it does not tune your scooter.** It connects, reads and proves the Tuya BLE protocol; tuning and writing are gated behind the per-device localKey and the Tuya cloud dpId schema, which are cloud- and device-provisioned and not shipped in this tool.
 
 ## What it does
 
