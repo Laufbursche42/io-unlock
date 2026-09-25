@@ -1,5 +1,7 @@
 # Laufbursche IO HAWK Tool (io-unlock)
 
+**The page: https://laufbursche42.github.io/io-unlock/**
+
 A single-page Web Bluetooth tool for any IO HAWK e-scooter that runs on the Tuya app (`com.iohawk.smart`). Pick your model, connect, and see the model's telemetry, settings and advanced settings. It speaks the Tuya BLE secure protocol and runs entirely in your browser. Nothing is sent to any server.
 
 This is a feasibility study, not a finished product. It is honest about what already works from static analysis and what still needs a real device or the Tuya cloud to finish. Every IO HAWK model that connects uses the same generic Tuya `ddzxc` data-point protocol; the model selector only scopes which fields are shown and labeled - it never invents a dpId, range or scaling.

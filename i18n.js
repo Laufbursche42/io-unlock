@@ -47,10 +47,11 @@ window.I18N = {
     schemaPh: "{\"speed_limit_e\": 104, \"mode\": 108}",
     btnLoadSchema: "Schema laden",
     btnClearSchema: "Schema leeren",
-    schemaHint: "Ohne Schema bleibt jede Einstellung gesperrt weil die dpId geraetespezifisch und cloud-seitig ist. Nichts wird hier erfunden - du lieferst die dpId selbst.",
+    schemaHint: "Optional. Nach dem Verbinden erscheinen die rohen Datenpunkte deines Scooters im Log (dpId + Wert). Das Schema ist nur die Beschriftung dazu - welche dpId speed_limit oder mode ist - und kommt aus einem BLE-Mitschnitt oder dem Tuya-Cloud-Produktschema, nicht aus der App. Ohne Schema siehst du die Werte roh; Benennen und Schreiben bleibt gesperrt. Nichts wird erfunden.",
+    preconnectHint: "Verbinde zuerst deinen Scooter. Erst nach der Verbindung zeigt das Tool die Datenpunkte, Einstellungen und erweiterten Einstellungen deines Modells - vorher wird nichts eingeblendet.",
 
     telemetryTitle: "Live-Werte",
-    telemetryHint: "Verbinde und lade ein Schema - dann fuellt der DP-Bericht diese Kacheln. Werte sind roh und unbestaetigt bis das Schema die Skalierung liefert.",
+    telemetryHint: "Nach dem Verbinden fuellt der DP-Bericht diese Kacheln mit den rohen Werten. Ein Schema liefert Beschriftung und Skalierung - ohne bleibt der Wert roh, aber sichtbar.",
     telemetryEmpty: "Fuer dieses Modell sind keine Telemetrie-Felder hinterlegt.",
 
     settingsTitle: "Einstellungen",
@@ -276,10 +277,11 @@ window.I18N = {
     schemaPh: "{\"speed_limit_e\": 104, \"mode\": 108}",
     btnLoadSchema: "Load schema",
     btnClearSchema: "Clear schema",
-    schemaHint: "Without a schema every setting stays gated, because the dpId is per-device and cloud-side. Nothing is invented here - you supply the dpId yourself.",
+    schemaHint: "Optional. After connecting, your scooter's raw data-points appear in the log (dpId + value). The schema is only the labeling for them - which dpId is speed_limit or mode - and comes from a BLE capture or the Tuya cloud product schema, not from the app. Without it you still see the raw values; naming and writing stay locked. Nothing is invented.",
+    preconnectHint: "Connect your scooter first. Only after a link does the tool show your model's data-points, settings and advanced settings - nothing is shown before that.",
 
     telemetryTitle: "Live values",
-    telemetryHint: "Connect and load a schema - then the DP report fills these tiles. Values are raw and unconfirmed until the schema supplies the scaling.",
+    telemetryHint: "After connecting, the DP report fills these tiles with the raw values. A schema supplies labeling and scaling - without it the value stays raw but visible.",
     telemetryEmpty: "No telemetry fields listed for this model.",
 
     settingsTitle: "Settings",

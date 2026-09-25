@@ -775,12 +775,8 @@ function renderModel() {
   // settings + advanced cards
   fillRows($('settings-rows'), p.settings);
   fillRows($('advanced-rows'), p.advanced);
-  { const c = $('settings-card'); if (c) c.hidden = !p.settings.length; }
-  { const c = $('advanced-card'); if (c) c.hidden = !p.advanced.length; }
-  { const c = $('boost-card'); if (c) c.hidden = !p.boost; }
-  { const c = $('raw-card'); if (c) c.hidden = !p.ble; }
-  { const c = $('keys-card'); if (c) c.hidden = !p.ble; }
-  { const c = $('schema-card'); if (c) c.hidden = !p.ble; }
+  // Card visibility (profile + connection state) is owned by updateGates(), which also runs
+  // on connect/disconnect, so device-specific cards stay hidden until the scooter is linked.
   updateGates();
   setStatus(state.connected ? 'connected' : (p.ble ? 'disconnected' : 'no-ble'));
 }
@@ -791,6 +787,18 @@ function fillRows(container, codes) {
 }
 // Gate A (session) + Gate B (schema dpId): reflect both as disabled state + a specific reason.
 function updateGates() {
+  const p = profile();
+  const conn = state.connected;
+  // Hide everything device-specific until the scooter is connected: only after a link do we
+  // know what it actually reports, so schema/keys/telemetry/settings are not front-loaded.
+  { const c = $('telemetry-card'); if (c) c.hidden = !p.telemetry.length || !conn; }
+  { const c = $('settings-card');  if (c) c.hidden = !p.settings.length  || !conn; }
+  { const c = $('advanced-card');  if (c) c.hidden = !p.advanced.length  || !conn; }
+  { const c = $('boost-card');     if (c) c.hidden = !p.boost            || !conn; }
+  { const c = $('raw-card');       if (c) c.hidden = !p.ble              || !conn; }
+  { const c = $('keys-card');      if (c) c.hidden = !p.ble              || !conn; }
+  { const c = $('schema-card');    if (c) c.hidden = !p.ble              || !conn; }
+  { const el = $('preconnect-hint'); if (el) el.hidden = conn || !p.ble; }
   const ready = sessionReady();
   document.querySelectorAll('.dp-row').forEach((row) => {
     const code = row.dataset.code;
