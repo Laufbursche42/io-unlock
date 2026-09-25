@@ -12,6 +12,7 @@ window.I18N = {
     themeToLight: "Auf helle Darstellung umschalten",
     themeToDark: "Auf dunkle Darstellung umschalten",
     platformNote: "Dieser Browser kann kein Web Bluetooth. Nutze Chrome oder Edge (Android/Desktop) oder Bluefy (iOS).",
+    bannerHtml: "<b>Hinweis: von Haus aus tunt diese Seite deinen Scooter nicht.</b> Dies ist eine Machbarkeitsstudie, die sich mit dem Tuya-BLE-Protokoll verbindet, es ausliest und vollstaendig belegt. <b>Schreiben ist gesperrt, nicht entfernt:</b> Tuning geht erst, wenn du den geraeteindividuellen localKey und das dpId-Schema aus der Tuya-Cloud lieferst - beides ist cloud- und geraeteseitig vergeben und steckt nicht in diesem Tool. Bis dahin liest und decodiert die Seite nur; jeder Schreibvorgang bleibt mit seiner Begruendung ausgegraut. <a href=\"#\" data-open-disclaimer>Haftungsausschluss lesen</a>.",
 
     s1Title: "So faengt es an",
     sub: "Live ueber Web Bluetooth mit einem IO-HAWK-E-Scooter reden der ueber die Tuya-App laeuft. Laeuft in Chrome oder Edge (Android/Desktop) und in Bluefy (iOS). Nichts verlaesst dein Geraet.",
@@ -242,6 +243,7 @@ window.I18N = {
     themeToLight: "Switch to light theme",
     themeToDark: "Switch to dark theme",
     platformNote: "This browser has no Web Bluetooth. Use Chrome or Edge (Android/desktop) or Bluefy (iOS).",
+    bannerHtml: "<b>Note: out of the box this does not tune your scooter.</b> This is a feasibility study that connects to the Tuya BLE protocol, reads it and proves it end to end. <b>Writing is gated, not disabled:</b> tuning works only once you supply the per-device localKey and the Tuya cloud dpId schema, which are cloud- and device-provisioned and are not in this tool. Until then the page only reads and decodes; every write stays greyed with its reason. <a href=\"#\" data-open-disclaimer>Read the disclaimer</a>.",
 
     s1Title: "Getting started",
     sub: "Talk live over Web Bluetooth to an IO HAWK scooter that runs on the Tuya app. Works in Chrome or Edge (Android/desktop) and Bluefy (iOS). Nothing leaves your device.",

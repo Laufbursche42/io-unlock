@@ -127,6 +127,11 @@ textarea:disabled { opacity: .45; cursor: not-allowed; }
 .warn { color: var(--warn); font-size: 12px; background: var(--warn-bg); border: 1px solid var(--warn-line);
   border-radius: 8px; padding: 9px 11px; margin: 0; }
 .warn b { color: var(--warn-strong); }
+/* Top banner: reading/proving the protocol works, tuning is gated behind per-device keys. Always visible. */
+.banner { background: var(--bad-bg); border: 1px solid var(--bad); border-radius: 12px; padding: 12px 14px;
+  color: var(--text); font-size: 13px; line-height: 1.5; }
+.banner b { color: var(--bad-strong); }
+.banner a { color: var(--accent); }
 pre#log { margin: 0; background: var(--field); border: 1px solid var(--line); border-radius: 8px; padding: 10px;
   font-family: var(--mono); font-size: 11.5px; color: var(--muted); max-height: 220px; overflow: auto;
   white-space: pre-wrap; word-break: break-word; overscroll-behavior: contain; }
