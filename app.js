@@ -9,7 +9,7 @@
  * invented here.
  */
 
-const BUILD = 'v2';
+const BUILD = 'v8';
 const $ = (id) => document.getElementById(id);
 
 const LS = {
