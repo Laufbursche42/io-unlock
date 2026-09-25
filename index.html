@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<!-- frame-ancestors is ignored in a meta element by the browser, it only works as an HTTP header.
+     GitHub Pages sends no custom headers, so it is left out here. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-t="pageTitle">Laufbursche IO HAWK Tool</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon-180.png">
+<link rel="stylesheet" href="styles.css?v=2">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Laufbursche <span data-t="brandSub"></span></h1>
+    <div class="head-right">
+      <span class="status" id="status" data-state="disconnected">disconnected</span>
+      <div class="head-tools">
+        <button type="button" class="theme-btn" id="btn-theme">&#9728;</button>
+        <div class="langs" id="langs" role="group">
+          <button type="button" data-lang="de" aria-pressed="true">DE</button>
+          <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <p class="warn" id="platform-note" data-t="platformNote" hidden></p>
+
+  <!-- (a) getting started ------------------------------------------------- -->
+  <div class="card">
+    <h2 data-t="s1Title"></h2>
+    <p class="hint" data-t="sub"></p>
+    <p class="hint" data-t="startHintGuide"></p>
+    <p class="warn" data-t="expWarn"></p>
+    <p class="hint" data-t="ownDevice"></p>
+  </div>
+
+  <!-- (b) model + connection ---------------------------------------------- -->
+  <div class="card">
+    <h2 data-t="modelTitle"></h2>
+    <div class="set-row">
+      <label data-t="lblModel"></label>
+      <select id="model-in">
+        <option value="auto" data-t="modelAuto"></option>
+        <option value="elitex2" data-t="modelElitex2"></option>
+        <option value="legacy2" data-t="modelLegacy2"></option>
+        <option value="legacy1" data-t="modelLegacy1"></option>
+      </select>
+    </div>
+    <p class="hint" id="model-hint"></p>
+    <p class="warn" id="legacy-banner" hidden></p>
+    <div class="btns">
+      <button class="primary span2" id="btn-conn"></button>
+    </div>
+    <p class="hint" id="devinfo"></p>
+    <p class="hint" data-t="connHint"></p>
+  </div>
+
+  <!-- (c) keys ------------------------------------------------------------ -->
+  <div class="card" id="keys-card">
+    <div class="card-head"><h2 data-t="keyTitle"></h2><button type="button" class="help-btn" data-help="key" aria-label="?">?</button></div>
+    <div class="set-row">
+      <label data-t="lblLocalKey"></label>
+      <input id="localkey-in" type="text" autocomplete="off" spellcheck="false" placeholder="a1b2c3d4e5f60718">
+    </div>
+    <div class="set-row">
+      <label data-t="lblSrand"></label>
+      <input id="srand-in" type="text" autocomplete="off" spellcheck="false" placeholder="1a2b3c4d5e6f">
+    </div>
+    <p class="hint"><span data-t="derivedPrefix"></span> <b id="derived-key">-</b></p>
+    <p class="hint" data-t="keyHint"></p>
+  </div>
+
+  <!-- (d) device schema --------------------------------------------------- -->
+  <div class="card" id="schema-card">
+    <div class="card-head"><h2 data-t="schemaTitle"></h2><button type="button" class="help-btn" data-help="schema" aria-label="?">?</button></div>
+    <div class="set-col">
+      <label data-t="lblSchema"></label>
+      <textarea id="schema-in" rows="3" autocomplete="off" spellcheck="false" data-t-ph="schemaPh"></textarea>
+    </div>
+    <div class="btns">
+      <button type="button" id="btn-load-schema" data-t="btnLoadSchema"></button>
+      <button type="button" id="btn-clear-schema" data-t="btnClearSchema"></button>
+    </div>
+    <p class="hint" data-t="schemaHint"></p>
+  </div>
+
+  <!-- (e) live telemetry -------------------------------------------------- -->
+  <div class="card" id="telemetry-card">
+    <h2 data-t="telemetryTitle"></h2>
+    <div class="grid" id="telemetry-grid"></div>
+    <p class="hint" data-t="telemetryHint"></p>
+  </div>
+
+  <!-- (f) settings -------------------------------------------------------- -->
+  <div class="card" id="settings-card">
+    <h2 data-t="settingsTitle"></h2>
+    <div class="dp-rows" id="settings-rows"></div>
+    <p class="hint" data-t="settingsHint"></p>
+  </div>
+
+  <!-- (g) advanced settings ----------------------------------------------- -->
+  <div class="card" id="advanced-card">
+    <h2 data-t="advancedTitle"></h2>
+    <p class="warn" data-t="advancedWarn"></p>
+    <div class="dp-rows" id="advanced-rows"></div>
+    <p class="hint" data-t="advancedHint"></p>
+  </div>
+
+  <!-- (h) raw DP write (escape hatch) ------------------------------------- -->
+  <div class="card" id="raw-card">
+    <div class="card-head"><h2 data-t="rawTitle"></h2><button type="button" class="help-btn" data-help="raw" aria-label="?">?</button></div>
+    <div class="set-row">
+      <label data-t="lblDpId"></label>
+      <input id="dpid-in" type="number" min="1" max="255" placeholder="104">
+    </div>
+    <div class="set-row">
+      <label data-t="lblDpType"></label>
+      <select id="dptype-in">
+        <option value="value" data-t="dtValue"></option>
+        <option value="enum" data-t="dtEnum"></option>
+        <option value="bool" data-t="dtBool"></option>
+        <option value="string" data-t="dtString"></option>
+        <option value="raw" data-t="dtRaw"></option>
+      </select>
+    </div>
+    <div class="set-row">
+      <label data-t="lblValue"></label>
+      <input id="dpval-in" type="text" placeholder="25">
+    </div>
+    <div class="set-row">
+      <label data-t="lblPv"></label>
+      <select id="pv-in">
+        <option value="3" data-t="pv3"></option>
+        <option value="4" data-t="pv4"></option>
+        <option value="5" data-t="pv5"></option>
+      </select>
+    </div>
+    <div class="set-row">
+      <label data-t="lblArm"></label>
+      <select id="arm-in"><option value="0" data-t="armPreview"></option><option value="1" data-t="armLive"></option></select>
+    </div>
+    <div class="btns">
+      <button class="primary span2" id="btn-sendspeed" data-t="btnBuildSend"></button>
+    </div>
+    <p class="hint" data-t="rawHint"></p>
+  </div>
+
+  <!-- (i) boost sequencer ------------------------------------------------- -->
+  <div class="card" id="boost-card">
+    <div class="card-head"><h2 data-t="boostTitle"></h2><button type="button" class="help-btn" data-help="boost" aria-label="?">?</button></div>
+    <p class="warn" data-t="boostWarn"></p>
+    <div class="set-row">
+      <label data-t="lblModeDpId"></label>
+      <input id="mode-dpid" type="number" min="1" max="255" placeholder="104">
+    </div>
+    <div class="set-row">
+      <label data-t="lblModeType"></label>
+      <select id="mode-dptype">
+        <option value="enum" data-t="dtEnum"></option>
+        <option value="value" data-t="dtValue"></option>
+      </select>
+    </div>
+    <div class="set-row">
+      <label data-t="lblM1"></label>
+      <input id="mode-v1" type="number" value="0">
+    </div>
+    <div class="set-row">
+      <label data-t="lblM3"></label>
+      <input id="mode-v3" type="number" value="2">
+    </div>
+    <div class="set-row">
+      <label data-t="lblM2"></label>
+      <input id="mode-v2" type="number" value="1">
+    </div>
+    <div class="set-row">
+      <label data-t="lblHoldMs"></label>
+      <input id="boost-delay" type="number" value="700">
+    </div>
+    <div class="set-row">
+      <label data-t="lblVoice"></label>
+      <select id="voice-in"><option value="1" data-t="optOn"></option><option value="0" data-t="optOff"></option></select>
+    </div>
+    <div class="btns">
+      <button class="primary span2" id="btn-auto" data-t="btnAuto"></button>
+    </div>
+    <div class="btns">
+      <button id="btn-boost" data-t="btnBoost"></button>
+      <button id="btn-secure" data-t="btnSecure"></button>
+    </div>
+    <div class="btns">
+      <button id="btn-mode1" data-t="btnMode1"></button>
+      <button id="btn-mode2" data-t="btnMode2"></button>
+      <button id="btn-mode3" data-t="btnMode3"></button>
+    </div>
+    <p class="hint" data-t="boostHint"></p>
+  </div>
+
+  <!-- (j) log ------------------------------------------------------------- -->
+  <div class="card">
+    <h2 data-t="logTitle"></h2>
+    <div class="log-opts">
+      <div class="log-opt">
+        <span data-t="publicLogLabel"></span>
+        <input type="checkbox" id="public-log" checked>
+        <button type="button" class="help-btn" data-help="publiclog" aria-label="?">?</button>
+      </div>
+      <div class="log-opt">
+        <span data-t="diagLogLabel"></span>
+        <input type="checkbox" id="diag-log">
+        <button type="button" class="help-btn" data-help="diaglog" aria-label="?">?</button>
+      </div>
+    </div>
+    <div class="btns">
+      <button type="button" id="btn-copy-log" data-t="btnCopyLog"></button>
+      <button type="button" id="btn-clear-log" data-t="btnClearLog"></button>
+      <button type="button" id="btn-save-log" class="span2" data-t="btnSaveLog"></button>
+      <button type="button" id="btn-diag" data-t="btnDiag"></button>
+      <button type="button" id="btn-selftest" data-t="btnSelfTest"></button>
+    </div>
+    <p class="hint" data-t="diagHint"></p>
+    <pre id="log"></pre>
+    <p class="hint"><span class="log-tx" data-t="logTxLegend"></span>, <span class="log-rx" data-t="logRxLegend"></span></p>
+  </div>
+
+  <!-- (k) footer ---------------------------------------------------------- -->
+  <footer class="foot">
+    <span class="foot-links">
+      <a id="link-guide" href="GUIDE.de.md" data-doc="GUIDE" data-t="footGuide"></a>
+      <a href="https://github.com/Laufbursche42/io-unlock" target="_blank" rel="noopener" data-t="footSource"></a>
+      <a id="link-readme" href="README.md" data-doc="README" data-t="footReadme"></a>
+      <a id="link-disclaimer" href="#" data-t="footDisclaimer"></a>
+      <a id="link-license" href="LICENSE.de.md" data-doc="LICENSE" data-t="footLicense"></a>
+      <a id="link-privacy" href="PRIVACY.de.md" data-doc="PRIVACY" data-t="footPrivacy"></a>
+      <a id="link-trademarks" href="TRADEMARKS.de.md" data-doc="TRADEMARKS" data-t="footTrademarks"></a>
+    </span>
+    <span class="ver" id="build-ver"></span>
+  </footer>
+</div>
+
+<dialog id="doc" aria-labelledby="doc-title">
+  <div class="doc-head">
+    <h3 id="doc-title"></h3>
+    <button type="button" id="doc-x">&times;</button>
+  </div>
+  <div class="doc-body" id="doc-body"></div>
+  <div class="doc-foot">
+    <button type="button" id="doc-close" data-t="docClose"></button>
+  </div>
+</dialog>
+
+<dialog id="help" aria-labelledby="help-title">
+  <div class="doc-head">
+    <h3 id="help-title"></h3>
+    <button type="button" id="help-x">&times;</button>
+  </div>
+  <div class="doc-body"><p id="help-body"></p></div>
+  <div class="doc-foot">
+    <button type="button" id="help-close" data-t="docClose"></button>
+  </div>
+</dialog>
+
+<dialog id="confirm" aria-labelledby="confirm-title">
+  <div class="doc-head">
+    <h3 id="confirm-title" data-t="confirmTitle"></h3>
+    <button type="button" id="confirm-x">&times;</button>
+  </div>
+  <div class="doc-body"><p id="confirm-body"></p></div>
+  <div class="doc-foot doc-foot-2">
+    <button type="button" id="confirm-no" data-t="confirmNo"></button>
+    <button type="button" class="primary" id="confirm-yes" data-t="confirmYes"></button>
+  </div>
+</dialog>
+
+<script src="i18n.js?v=2"></script>
+<script src="app.js?v=2"></script>
+</body>
+</html>
