@@ -11,6 +11,7 @@ window.I18N = {
     langGroup: "Sprache",
     themeToLight: "Auf helle Darstellung umschalten",
     themeToDark: "Auf dunkle Darstellung umschalten",
+    movedHint: "Hinweis: Dieses Werkzeug wandert nach <a href=\"https://lb-tool-web.pages.dev/\" target=\"_blank\" rel=\"noopener\">lb-tool-web.pages.dev</a>, das mehrere Roller unter einem Dach bündelt.",
     platformNote: "Dieser Browser kann kein Web Bluetooth. Nutze Chrome oder Edge (Android/Desktop) oder Bluefy (iOS).",
     bannerHtml: "<b>Hinweis: von Haus aus tunt diese Seite deinen Scooter nicht.</b> Dies ist eine Machbarkeitsstudie, die sich mit dem Tuya-BLE-Protokoll verbindet, es ausliest und vollständig belegt. <b>Schreiben ist gesperrt, nicht entfernt:</b> Tuning geht erst, wenn du den geräteindividuellen localKey und das dpId-Schema aus der Tuya-Cloud lieferst - beides ist cloud- und geräteseitig vergeben und steckt nicht in diesem Tool. Bis dahin liest und decodiert die Seite nur; jeder Schreibvorgang bleibt mit seiner Begründung ausgegraut. <a href=\"#\" data-open-disclaimer>Haftungsausschluss lesen</a>.",
 
@@ -242,6 +243,7 @@ window.I18N = {
     langGroup: "Language",
     themeToLight: "Switch to light theme",
     themeToDark: "Switch to dark theme",
+    movedHint: "Note: this tool is moving to <a href=\"https://lb-tool-web.pages.dev/\" target=\"_blank\" rel=\"noopener\">lb-tool-web.pages.dev</a>, which brings several scooters under one roof.",
     platformNote: "This browser has no Web Bluetooth. Use Chrome or Edge (Android/desktop) or Bluefy (iOS).",
     bannerHtml: "<b>Note: out of the box this does not tune your scooter.</b> This is a feasibility study that connects to the Tuya BLE protocol, reads it and proves it end to end. <b>Writing is gated, not disabled:</b> tuning works only once you supply the per-device localKey and the Tuya cloud dpId schema, which are cloud- and device-provisioned and are not in this tool. Until then the page only reads and decodes; every write stays greyed with its reason. <a href=\"#\" data-open-disclaimer>Read the disclaimer</a>.",
 
