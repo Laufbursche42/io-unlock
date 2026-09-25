@@ -149,7 +149,7 @@ pre#log { margin: 0; background: var(--field); border: 1px solid var(--line); bo
 .foot a { color: var(--accent); font-size: 12px; text-decoration: none; }
 .foot a:hover { text-decoration: underline; }
 .foot .ver { color: var(--muted); font-size: 12px; white-space: nowrap; }
-.foot-copy { color: var(--muted) !important; font-size: 11px; }
+.foot-copy { color: var(--accent); font-size: 12px; text-decoration: none; }
 code { font-family: var(--mono); font-size: 12px; background: var(--field); border: 1px solid var(--line);
   border-radius: 5px; padding: 1px 5px; color: var(--value); word-break: break-all; }
 
