@@ -111,6 +111,12 @@ textarea { background: var(--field); color: var(--text); border: 1px solid var(-
   padding: 10px 12px; font-size: 13px; font-family: var(--mono); width: 100%; resize: vertical; min-height: 60px; }
 textarea:disabled { opacity: .45; cursor: not-allowed; }
 
+/* Bluetooth-log upload: file input styled as a button, like lb-tool-web. */
+.file-field { display: flex; gap: 8px; align-items: center; }
+.file-btn { flex: 0 0 auto; display: inline-flex; align-items: center; padding: 8px 12px; font-size: 12px; font-weight: 600;
+  text-transform: none; letter-spacing: normal; border: 1px solid var(--line); border-radius: 8px; background: var(--chip); color: var(--text); cursor: pointer; }
+.file-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--muted); }
+
 /* Log option toggles (public log / diagnostics), like lb-tool-web. */
 .log-opts { display: flex; flex-direction: column; gap: 2px; }
 .log-opt { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 5px; margin: 0 0 4px; }

@@ -40,6 +40,10 @@ window.I18N = {
     lblSrand: "srand (Hex, aus dem Log)",
     derivedPrefix: "secretKey5:",
     keyHint: "Ohne localKey kann die Seite keinen gültigen DP-Frame verschlüsseln. Der srand steht nach dem Verbinden im Log (Device-Info-Notification) und ist hier einzutragen.",
+    lblLogUpload: "Bluetooth-Log auswerten",
+    fileChoose: "Datei wählen",
+    logUploadHint: "Optional. Lädt einen BLE-Mitschnitt (btsnoop .log, .gz, Android-Fehlerbericht .zip oder Hex-Text) und sucht rein lokal nach srand- und dpId-Kandidaten. Nichts wird hochgeladen. Die Fundstellen erscheinen im Log - zum Eintragen in srand und Schema. Der localKey steckt nicht im BLE-Verkehr, er kommt aus der Tuya-Cloud.",
+    logUploadHelp: "Ein rein lokaler Parser (die CSP verbietet jede Netzverbindung). Er zerlegt den Container (gzip, ZIP, Hex-Text), sucht einzelne Tuya-GATT-Frames und prüft jeden per CRC. Aus den unverschlüsselten Frames zieht er srand-Kandidaten (Device-Info/Pairing) und beobachtete dpId+Typ-Paare fürs Schema. Verschlüsselte Frames brauchen den Schlüssel und werden nur gezählt. Alles ist Kandidat, nichts wird behauptet: du übernimmst die Werte selbst in srand und Schema. Der localKey ist geräteindividuell und cloud-seitig und lässt sich aus einem Mitschnitt nicht gewinnen.",
 
     schemaTitle: "Geräteschema",
     schemaHelp: "Die numerische dpId einer Funktion (welche Zahl für speed_limit oder mode steht) liegt im Tuya-Cloud-Schema - nicht in der App und in keinem der Modelle fest verdrahtet. Trage hier ein was du aus einem BLE-Mitschnitt oder dem Cloud-Produktschema kennst - als JSON code -> dpId. Jede Zeile deren dpId du einträgst schaltet frei. Beispiel: {\"speed_limit_e\": 104, \"mode\": 108}. Erlaubt ist auch die lange Form {\"mode\": {\"dpId\": 108, \"type\": \"enum\"}}.",
@@ -270,6 +274,10 @@ window.I18N = {
     lblSrand: "srand (hex, from the log)",
     derivedPrefix: "secretKey5:",
     keyHint: "Without the localKey the page cannot encrypt a valid DP frame. The srand appears in the log after connecting (device-info notification); enter it here.",
+    lblLogUpload: "Parse Bluetooth log",
+    fileChoose: "Choose file",
+    logUploadHint: "Optional. Loads a BLE capture (btsnoop .log, .gz, Android bug-report .zip or hex text) and scans locally for srand and dpId candidates. Nothing is uploaded. Hits appear in the log, to paste into srand and the schema. The localKey is not in BLE traffic; it comes from the Tuya cloud.",
+    logUploadHelp: "A purely local parser (the CSP forbids any network). It unwraps the container (gzip, ZIP, hex text), finds individual Tuya GATT frames and CRC-checks each one. From the plaintext frames it pulls srand candidates (device-info/pairing) and observed dpId+type pairs for the schema. Encrypted frames need the key and are only counted. Everything is a candidate, nothing is asserted: you copy the values into srand and the schema yourself. The localKey is per-device and cloud-side and cannot be recovered from a capture.",
 
     schemaTitle: "Device schema",
     schemaHelp: "The numeric dpId of a function (which number means speed_limit or mode) lives in the Tuya cloud schema, not in the app, and is hardcoded in none of the models. Enter here what you know from a BLE capture or the cloud product schema, as JSON code -> dpId. Every row whose dpId you enter unlocks. Example: {\"speed_limit_e\": 104, \"mode\": 108}. The long form {\"mode\": {\"dpId\": 108, \"type\": \"enum\"}} is also allowed.",

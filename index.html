@@ -10,7 +10,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="favicon-180.png">
-<link rel="stylesheet" href="styles.css?v=9">
+<link rel="stylesheet" href="styles.css?v=10">
 </head>
 <body>
 <div class="wrap">
@@ -74,6 +74,15 @@
     </div>
     <p class="hint"><span data-t="derivedPrefix"></span> <b id="derived-key">-</b></p>
     <p class="hint" data-t="keyHint"></p>
+    <!-- Bluetooth-log upload: pull candidate srand + dpId/type out of a capture, fully local. -->
+    <div class="set-col">
+      <div class="card-head"><label data-t="lblLogUpload"></label><button type="button" class="help-btn" data-help="logupload" aria-label="?">?</button></div>
+      <div class="file-field">
+        <label class="file-btn"><input type="file" id="log-in" accept=".log,.gz,.zip,.txt,application/zip,application/gzip" hidden><span data-t="fileChoose"></span></label>
+        <span id="log-name" class="file-name"></span>
+      </div>
+    </div>
+    <p class="hint" data-t="logUploadHint"></p>
   </div>
 
   <!-- (d) device schema --------------------------------------------------- -->
@@ -278,7 +287,7 @@
   </div>
 </dialog>
 
-<script src="i18n.js?v=9"></script>
-<script src="app.js?v=9"></script>
+<script src="i18n.js?v=10"></script>
+<script src="app.js?v=10"></script>
 </body>
 </html>

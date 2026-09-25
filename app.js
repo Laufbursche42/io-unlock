@@ -9,7 +9,7 @@
  * invented here.
  */
 
-const BUILD = 'v9';
+const BUILD = 'v10';
 const $ = (id) => document.getElementById(id);
 
 const LS = {
@@ -924,6 +924,154 @@ function runSelfTest() {
   log(allOk ? 'selftest: all ' + checks.length + ' vectors OK' : 'selftest: FAILURES', allOk ? 'log-ok' : 'log-err');
 }
 
+// --------------------------- Bluetooth-log -> Tuya auth-material extractor (static, local, pre-connect) ---------------------------
+// Pull CANDIDATE Tuya BLE material out of an uploaded capture: a raw btsnoop .log, a .gz, an Android
+// bug-report .zip, or an ASCII-hex text dump. Fully local (CSP connect-src 'self' forbids any upload);
+// nothing is sent. Modelled on lb-tool-web/drivers/navee.js extractAuthFromLog, but the NAVEE 0x30
+// auth-frame scan is replaced by a Tuya scan. srand offset and dpId meaning are cloud/device-side and
+// unproven here, so every result is SHOWN as a candidate for the user to paste, never asserted.
+async function logDecompress(bytes, fmt) {
+  try {
+    if (typeof DecompressionStream !== 'function') return null;
+    const ds = new DecompressionStream(fmt);
+    const st = new Blob([bytes]).stream().pipeThrough(ds);
+    return new Uint8Array(await new Response(st).arrayBuffer());
+  } catch (e) { return null; }
+}
+function logZipEntries(b) {
+  const out = [], dv = new DataView(b.buffer, b.byteOffset, b.byteLength);
+  let eocd = -1;
+  for (let i = b.length - 22; i >= 0 && i > b.length - 22 - 0x10000; i--) { if (b[i] === 0x50 && b[i+1] === 0x4b && b[i+2] === 0x05 && b[i+3] === 0x06) { eocd = i; break; } }
+  if (eocd < 0) return out;
+  const n = dv.getUint16(eocd + 10, true); let p = dv.getUint32(eocd + 16, true);
+  for (let e = 0; e < n && p + 46 <= b.length; e++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const method = dv.getUint16(p + 10, true), compSize = dv.getUint32(p + 20, true);
+    const nameLen = dv.getUint16(p + 28, true), extraLen = dv.getUint16(p + 30, true), commentLen = dv.getUint16(p + 32, true), lho = dv.getUint32(p + 42, true);
+    let name = ''; for (let k = 0; k < nameLen; k++) name += String.fromCharCode(b[p + 46 + k]);
+    out.push({ name: name, method: method, compSize: compSize, lho: lho });
+    p += 46 + nameLen + extraLen + commentLen;
+  }
+  return out;
+}
+function logZipEntryData(b, ent) {
+  const dv = new DataView(b.buffer, b.byteOffset, b.byteLength);
+  if (dv.getUint32(ent.lho, true) !== 0x04034b50) return null;
+  const start = ent.lho + 30 + dv.getUint16(ent.lho + 26, true) + dv.getUint16(ent.lho + 28, true);
+  return b.slice(start, start + ent.compSize);
+}
+// ASCII-hex text dump -> bytes (a text capture, e.g. a copied hex log), else null.
+function logHexTextToBytes(b) {
+  const cap = Math.min(b.length, 4096); if (!cap) return null;
+  let printable = 0;
+  for (let i = 0; i < cap; i++) { const c = b[i]; if (c === 9 || c === 10 || c === 13 || (c >= 32 && c < 127)) printable++; }
+  if (printable < cap * 0.95) return null;
+  let s = ''; for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+  const pairs = s.match(/[0-9a-fA-F]{2}/g);
+  if (!pairs || pairs.length < 8) return null;
+  const out = new Uint8Array(pairs.length);
+  for (let i = 0; i < pairs.length; i++) out[i] = parseInt(pairs[i], 16);
+  return out;
+}
+// Scan a raw byte stream for single-packet Tuya GATT frames: `00 <varint total> <control> <inner>`
+// (the shape splitGatt() builds and feedReassembler() reads). The inner frame is seq(2) cmd(1)
+// flag(1) data crc16(2); we CRC-validate with the proven crc16Modbus, so only real plaintext frames
+// are surfaced. Encrypted frames (control bit 7) cannot be read without the key we are looking for,
+// so they are only counted. Returns { srand:[Uint8Array], dps:[{dpId,type}], enc, frames }.
+function scanTuyaLog(b) {
+  const srand = [], dpMap = {}, srandSeen = {};
+  let frames = 0, enc = 0;
+  for (let i = 0; i + 3 < b.length; i++) {
+    if (b[i] !== 0x00) continue;
+    const rv = readVarint(b, i + 1); const total = rv[0], p = rv[1];
+    if (total < 7 || total > 1024 || p + total > b.length) continue;   // 1 control byte + >= 6 inner
+    const control = b[p];
+    const ver = (control >> 4) & 7, encBit = (control >> 7) & 1;
+    if (ver > 5) continue;                                             // implausible protocol version
+    const inner = b.subarray(p + 1, p + total);                        // total counts the control byte
+    if (inner.length < 6) continue;
+    if (encBit) { enc++; continue; }                                   // encrypted -> needs the key
+    const crcGot = (inner[inner.length - 2] << 8) | inner[inner.length - 1];
+    const crcCalc = crc16Modbus(inner.subarray(0, inner.length - 2));
+    if (crcGot !== crcCalc) continue;                                  // no real frame at this offset
+    frames++;
+    const cmd1 = inner[2];
+    const cmd16 = (inner[2] << 8) | inner[3];
+    const data = inner.subarray(4, inner.length - 2);
+    // Device-info / pairing reply (cmd 0x00): the 6-byte srand lives somewhere in here (offset
+    // unproven), so surface the whole small region as a candidate for the user to pick from.
+    if (cmd1 === 0x00 && data.length >= 6 && data.length <= 64) {
+      const k = hex(data); if (!srandSeen[k]) { srandSeen[k] = 1; srand.push(data.slice()); }
+    }
+    // DP report / status: try the proven strict DP-entry parse at the known offsets and collect the
+    // observed dpId + wire-type pairs to suggest a schema. Strict end-match rejects wrong framings.
+    if (cmd16 === CMD_FUN_RECEIVE_DP || cmd1 === CMD_DPS || cmd1 === CMD_DEVICE_STATUS) {
+      const tries = [];
+      if (cmd16 === CMD_FUN_RECEIVE_DP && data.length > 7) tries.push(data.subarray(7));
+      tries.push(data);
+      for (let pi = 0; pi < 2; pi++) { const pv = pi === 0 ? 3 : 4;
+        for (let ti = 0; ti < tries.length; ti++) {
+          const entries = parseDpEntries(tries[ti], pv, true);
+          if (entries && entries.length) entries.forEach((e) => { if (dpMap[e.dpId] == null) dpMap[e.dpId] = e.dpType; });
+        }
+      }
+    }
+  }
+  const dps = Object.keys(dpMap).map((id) => ({ dpId: +id, type: DP_TYPE_NAME[dpMap[id]] || String(dpMap[id]) }));
+  dps.sort((a, b2) => a.dpId - b2.dpId);
+  return { srand: srand, dps: dps, enc: enc, frames: frames };
+}
+// Unwrap the container (raw / gzip / zip / hex-text), scan each layer, and merge de-duplicated results.
+async function extractTuyaFromLog(file) {
+  const raw = new Uint8Array(await file.arrayBuffer());
+  const parts = [];
+  const runScan = (bytes) => { if (bytes && bytes.length) parts.push(scanTuyaLog(bytes)); };
+  runScan(raw);
+  { const ht = logHexTextToBytes(raw); if (ht) runScan(ht); }
+  if (raw[0] === 0x1f && raw[1] === 0x8b) { const g = await logDecompress(raw, 'gzip'); if (g) { runScan(g); const gt = logHexTextToBytes(g); if (gt) runScan(gt); } }
+  if (raw[0] === 0x50 && raw[1] === 0x4b) {                          // a ZIP (Android bug report)
+    const ents = logZipEntries(raw);
+    ents.sort((a, b2) => (/(btsnoop|bluetooth|bt)/i.test(b2.name) ? 1 : 0) - (/(btsnoop|bluetooth|bt)/i.test(a.name) ? 1 : 0));
+    for (const ent of ents) {
+      const dz = logZipEntryData(raw, ent); if (!dz) continue;
+      const dec = ent.method === 0 ? dz : await logDecompress(dz, 'deflate-raw');
+      if (!dec) continue;
+      runScan(dec);
+      if (dec[0] === 0x1f && dec[1] === 0x8b) { const g = await logDecompress(dec, 'gzip'); if (g) runScan(g); }
+      const dt = logHexTextToBytes(dec); if (dt) runScan(dt);
+    }
+  }
+  const srandSeen = {}, srand = [], dpSeen = {}, dps = []; let enc = 0, frames = 0;
+  parts.forEach((r) => {
+    enc += r.enc; frames += r.frames;
+    r.srand.forEach((s) => { const k = hex(s); if (!srandSeen[k]) { srandSeen[k] = 1; srand.push(s); } });
+    r.dps.forEach((d) => { if (!dpSeen[d.dpId]) { dpSeen[d.dpId] = 1; dps.push(d); } });
+  });
+  dps.sort((a, b2) => a.dpId - b2.dpId);
+  return { srand: srand, dps: dps, enc: enc, frames: frames };
+}
+function onLogFile(file) {
+  if (!file) return;
+  // Log lines stay technical English/ASCII (shared captures read the same for all languages).
+  log('log parse: reading ' + file.name + ' (local only, nothing is uploaded)');
+  extractTuyaFromLog(file).then((res) => {
+    if (!res.frames && !res.enc) { log('log parse: no Tuya BLE frames found in this file', 'log-err'); return; }
+    log('log parse: ' + res.frames + ' plaintext frame(s), ' + res.enc + ' encrypted (need the key)', 'log-ok');
+    if (res.srand.length) {
+      log('srand candidates (device-info/pairing region; srand is a 6-byte field inside - pick the 6 bytes and paste into srand):');
+      res.srand.slice(0, 6).forEach((s) => log('  candidate ' + hex(s)));
+    }
+    if (res.dps.length) {
+      log('dpId/type candidates (observed on the wire; the code name is yours to map - nothing is asserted):');
+      res.dps.forEach((d) => log('  dpId ' + d.dpId + ' type=' + d.type));
+      const obj = {}; res.dps.forEach((d) => { obj['dp' + d.dpId] = { dpId: d.dpId, type: d.type }; });
+      log('  candidate schema JSON (rename dpNNN to the real code, then Load schema): ' + JSON.stringify(obj));
+    }
+    if (!res.srand.length && !res.dps.length) log('log parse: frames found but no srand/dpId candidates to surface - read the raw RX lines by hand');
+    log('log parse: localKey is cloud/account-side (Tuya IoT platform) and is not present in BLE traffic - see the Keys help');
+  }).catch((e) => log('log parse failed: ' + (e && e.message || e), 'log-err'));
+}
+
 // --------------------------- i18n apply ---------------------------
 function applyLang() {
   document.documentElement.lang = state.lang;
@@ -963,7 +1111,7 @@ function initTheme() {
 // --------------------------- help modals ---------------------------
 const HELP = { key: ['keyTitle', 'keyHelp'], schema: ['schemaTitle', 'schemaHelp'], raw: ['rawTitle', 'rawHelp'],
   boost: ['boostTitle', 'boostHelp'], publiclog: ['publicLogLabel', 'publicLogHelp'], diaglog: ['diagLogLabel', 'diagLogHelp'],
-  disclaimer: ['footDisclaimer', 'disclaimerText'] };
+  logupload: ['lblLogUpload', 'logUploadHelp'], disclaimer: ['footDisclaimer', 'disclaimerText'] };
 function openHelp(key) {
   const m = HELP[key]; if (!m) return;
   const dlg = $('help'); if (!dlg) return;
@@ -1089,6 +1237,7 @@ window.addEventListener('DOMContentLoaded', () => {
   { const b = $('link-disclaimer'); if (b) b.addEventListener('click', (e) => { e.preventDefault(); openHelp('disclaimer'); }); }
   { const s = $('model-in'); if (s) s.addEventListener('change', () => { state.model = s.value; try { localStorage.setItem(LS.model, state.model); } catch (e) {} renderModel(); }); }
   { const c = $('btn-conn'); if (c) c.addEventListener('click', () => { if (c.dataset.act === 'disconnect') disconnect(); else connect(); }); }
+  { const lf = $('log-in'); if (lf) lf.addEventListener('change', () => { const file = lf.files && lf.files[0]; lf.value = ''; const nm = $('log-name'); if (nm) nm.textContent = file ? file.name : ''; onLogFile(file); }); }
   { const b = $('btn-load-schema'); if (b) b.addEventListener('click', loadSchema); }
   { const b = $('btn-clear-schema'); if (b) b.addEventListener('click', clearSchema); }
   { const b = $('btn-sendspeed'); if (b) b.addEventListener('click', sendRaw); }
