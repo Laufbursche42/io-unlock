@@ -2,6 +2,8 @@
 
 Diese Seite redet per Web Bluetooth mit jedem IO-HAWK-E-Scooter der über die Tuya-App (com.iohawk.smart) läuft. Sie ist ein allgemeines Werkzeug: wähle dein Modell dann verbinde. Sie ist eine Machbarkeitsstudie und bleibt ehrlich dabei was heute schon geht und was noch das reale Gerät braucht.
 
+> **Wichtig für Fehler-Reports:** Schalte unten auf der Seite den **Diagnose-Log** ein, *bevor* du dich mit dem Scooter verbindest. Nur dann wird der komplette Verbindungsaufbau mitgeschnitten - und genau diese Zeilen brauchen wir in einem [Ticket](https://github.com/Laufbursche42/Laufbursche42/issues), um ein Problem nachzuvollziehen.
+
 ## Was du brauchst
 
 - Einen IO HAWK der sich über die Tuya-App verbindet. Legacy 1.0 hat kein Bluetooth und ist nicht verbindbar; Legacy 2.0 hat Bluetooth nur am BMS.
@@ -121,3 +123,6 @@ Verhalten: sobald du den Gasgriff einmal ganz loslässt oder bremst fällt der C
 ## Recht und Sicherheit
 
 Nur am eigenen Fahrzeug auf privatem Gelände. Das Anheben der Geschwindigkeit hebt die Drossel auf, die ABE erlischt und der Betrieb auf öffentlichen Wegen ist dann nicht erlaubt. Wer ein verändertes Fahrzeug im öffentlichen Verkehr fährt begeht mit hoher Wahrscheinlichkeit Straftaten (Fahren ohne die nötige Fahrerlaubnis sowie einen Verstoß gegen das Pflichtversicherungsgesetz). Der Boost ist eine Live-Aktion während der Fahrt mit hohem Sturzrisiko. Alles auf eigenes Risiko.
+
+## Mithelfen
+Willst du herausfinden, ob und wie Tuning bei deinem Scooter geht? Teste dieses Tool an deinem eigenen Fahrzeug und öffne ein Ticket auf [GitHub](https://github.com/Laufbursche42/Laufbursche42/issues) - mit deinem Modell und was funktioniert hat (oder nicht). So finden wir gemeinsam heraus, was bei welchem Modell möglich ist.

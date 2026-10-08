@@ -2,6 +2,8 @@
 
 This page talks over Web Bluetooth to any IO HAWK e-scooter that runs on the Tuya app (`com.iohawk.smart`). It is a general tool: pick your model, then connect. It is a feasibility study and stays honest about what already works and what still needs the real device.
 
+> **Important for error reports:** switch on the **Diagnostic log** at the bottom of the page *before* you connect to the scooter. Only then is the full connection handshake captured - and those are exactly the lines we need in a [ticket](https://github.com/Laufbursche42/Laufbursche42/issues) to reproduce a problem.
+
 ## What you need
 
 - An IO HAWK that connects through the Tuya app. Legacy 1.0 has no Bluetooth and cannot connect; Legacy 2.0 has Bluetooth only on the BMS.
@@ -121,3 +123,6 @@ Behaviour: the moment you fully release the throttle once or brake, the controll
 ## Legal and safety
 
 Only on your own vehicle on private ground. Raising the speed removes the throttle limit, the road approval (ABE) lapses and riding on public roads is then not allowed. Riding a modified scooter in public traffic very likely constitutes criminal offences (driving without the required licence and a breach of the compulsory insurance act). The boost is a live action while riding with a high risk of falling. Everything at your own risk.
+
+## Contribute
+Want to find out if and how tuning works on your scooter? Test this tool on your own vehicle and open a ticket on [GitHub](https://github.com/Laufbursche42/Laufbursche42/issues) - with your model and what worked (or did not). That way we figure out together what is possible on which model.

@@ -9,7 +9,7 @@
  * invented here.
  */
 
-const BUILD = 'v10';
+const BUILD = 'v11';
 const $ = (id) => document.getElementById(id);
 
 const LS = {
@@ -60,7 +60,7 @@ const state = {
 };
 
 // --------------------------- log + redaction (lb-tool-web style; copy/save use the same text) ---------------------------
-function ts() { return new Date().toISOString().slice(11, 19); }   // HH:MM:SS
+function ts() { return new Date().toTimeString().slice(0, 8); }   // local HH:MM:SS
 function redact(text) {
   let s = String(text);
   if (state.deviceId) s = s.split(state.deviceId).join('[redacted-id]');
@@ -98,15 +98,18 @@ function renderLog() {
   });
   pre.scrollTop = pre.scrollHeight;
 }
-function logHeader() {
+function logDiagnosticHeader() {
   const nav = (typeof navigator !== 'undefined') ? navigator : {};
   log('=== io-unlock diagnostic ===');
   log('build: ' + BUILD);
+  log('time: ' + new Date().toISOString());
+  log('userAgent: ' + (nav.userAgent || '?'));
+  log('platform: ' + (nav.platform || '?'));
   log('webBluetooth: ' + (nav.bluetooth ? 'yes' : 'no'));
-  log('speechSynthesis: ' + ((typeof speechSynthesis !== 'undefined') ? 'yes' : 'no'));
-  log('============================');
+  log('protocol self-test: ' + (PROTO_OK ? 'OK' : 'FAILED'));
+  log('================================');
 }
-function clearLog() { state.logBuffer = []; const pre = $('log'); if (pre) pre.textContent = ''; logHeader(); log('log cleared'); }
+function clearLog() { state.logBuffer = []; const pre = $('log'); if (pre) pre.textContent = ''; logDiagnosticHeader(); log('log cleared'); }
 async function copyLog() {
   const text = state.logBuffer.map((e) => anonymize(e.raw)).join('\n');
   let ok = false;
@@ -477,11 +480,11 @@ async function connect() {
   if (!navigator.bluetooth) { log('no Web Bluetooth in this browser', 'log-err'); return; }
   try {
     setStatus('connecting');
-    log('requestDevice (filter service 0x1910, optional 0xfd50)');
-    bleDevice = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [uuid16(TUYA.service)] }, { services: [ALT.service] }],
-      optionalServices: [uuid16(TUYA.service), ALT.service]
-    });
+    const showAll = ($('showall') || {}).checked;
+    log(showAll ? 'requestDevice (all devices, optional 0x1910/0xfd50)' : 'requestDevice (filter service 0x1910, optional 0xfd50)');
+    bleDevice = await navigator.bluetooth.requestDevice(showAll
+      ? { acceptAllDevices: true, optionalServices: [uuid16(TUYA.service), ALT.service] }
+      : { filters: [{ services: [uuid16(TUYA.service)] }, { services: [ALT.service] }], optionalServices: [uuid16(TUYA.service), ALT.service] });
     state.deviceId = bleDevice.id || '';
     const dev = $('devinfo'); if (dev) dev.textContent = t('devPrefix') + ' ' + (bleDevice.name || '(no name)');
     log('device: ' + '\x01' + (bleDevice.name || '(no name)') + '\x01' + ' id=' + '\x01' + bleDevice.id + '\x01');
@@ -789,15 +792,13 @@ function fillRows(container, codes) {
 function updateGates() {
   const p = profile();
   const conn = state.connected;
-  // Hide everything device-specific until the scooter is connected: only after a link do we
-  // know what it actually reports, so schema/keys/telemetry/settings are not front-loaded.
-  { const c = $('telemetry-card'); if (c) c.hidden = !p.telemetry.length || !conn; }
-  { const c = $('settings-card');  if (c) c.hidden = !p.settings.length  || !conn; }
-  { const c = $('advanced-card');  if (c) c.hidden = !p.advanced.length  || !conn; }
-  { const c = $('boost-card');     if (c) c.hidden = !p.boost            || !conn; }
-  { const c = $('raw-card');       if (c) c.hidden = !p.ble              || !conn; }
-  { const c = $('keys-card');      if (c) c.hidden = !p.ble; }
-  { const c = $('schema-card');    if (c) c.hidden = !p.ble; }
+  // Canonical hidden-until-connect: the telemetry, battery, settings and advanced cards appear
+  // only after a link, so every page loads with the same picture (Intro + Verbindung + Log).
+  // Local Key, srand and schema live inside the always-visible Verbindung / Advanced cards.
+  { const c = $('live-card'); if (c) c.hidden = !conn; }
+  { const c = $('batt-card'); if (c) c.hidden = !conn; }
+  { const c = $('more-card'); if (c) c.hidden = !conn; }
+  { const c = $('raw-card');  if (c) c.hidden = !conn; }
   { const el = $('preconnect-hint'); if (el) el.hidden = conn || !p.ble; }
   const ready = sessionReady();
   document.querySelectorAll('.dp-row').forEach((row) => {
@@ -887,42 +888,26 @@ async function seqMode(which) {
   catch (e) { log('mode error: ' + e.message, 'log-err'); }
 }
 
-// --------------------------- diagnostics (scan all devices) ---------------------------
-async function scanAllDevicesDiagnostic() {
-  if (!navigator.bluetooth) { log('no Web Bluetooth', 'log-err'); return; }
-  try {
-    logHeader();
-    const d = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: [uuid16(TUYA.service), ALT.service] });
-    state.deviceId = d.id || '';
-    log('DIAG device: name=' + '\x01' + (d.name || '(none)') + '\x01' + ' id=' + '\x01' + d.id + '\x01');
-    const server = await d.gatt.connect();
-    const svcs = await server.getPrimaryServices();
-    for (const s of svcs) {
-      log('DIAG service ' + s.uuid);
-      try { const cs = await s.getCharacteristics(); for (const c of cs) log('DIAG   char ' + c.uuid); } catch (e) {}
-    }
-    log('DIAG done. Copy the log. For name plus manufacturer data use nRF Connect on Android.', 'log-ok');
-    try { d.gatt.disconnect(); } catch (e) {}
-  } catch (e) { log('DIAG error: ' + e.message, 'log-err'); }
-}
-
-// --------------------------- self-test ---------------------------
+// --------------------------- protocol self-test ---------------------------
+// Known-answer vectors for the crypto + framing primitives; the pass/fail result folds into the
+// diagnostic header (protocol self-test: OK/FAILED) instead of a separate on-load log block.
 function runSelfTest() {
-  const H = (b) => hex(b).replace(/ /g, '');
-  const checks = [];
-  const add = (name, got, want) => checks.push([name, got === want, got, want]);
-  add('MD5 empty', H(md5(strToBytes(''))), 'd41d8cd98f00b204e9800998ecf8427e');
-  add('MD5 abc', H(md5(strToBytes('abc'))), '900150983cd24fb0d6963f7d28e17f72');
-  add('AES block', H(AES.encryptBlockRaw(hexToBytes('00112233445566778899aabbccddeeff'), hexToBytes('000102030405060708090a0b0c0d0e0f'))), '69c4e0d86a7b0430d8cdb78070b4c55a');
-  add('AES decrypt', H(AES.decryptEcb(hexToBytes('69c4e0d86a7b0430d8cdb78070b4c55a'), hexToBytes('000102030405060708090a0b0c0d0e0f'))), '00112233445566778899aabbccddeeff');
-  add('CRC16 modbus', crc16Modbus(strToBytes('123456789')).toString(16).padStart(4,'0'), '4b37');
-  add('varint 300', hex(varint(300)), 'ac 02');
-  add('varint rt', String(readVarint(varint(300), 0)[0]), '300');
-  add('DP value', hex(encodeDp(4, DP_TYPE.value, 1000, 3)), '04 02 04 00 00 03 e8');
-  let allOk = true;
-  checks.forEach(([name, ok, got, want]) => { if (!ok) allOk = false; log('selftest ' + (ok ? 'OK ' : 'FAIL ') + name + (ok ? '' : (' got=' + got + ' want=' + want)), ok ? 'log-ok' : 'log-err'); });
-  log(allOk ? 'selftest: all ' + checks.length + ' vectors OK' : 'selftest: FAILURES', allOk ? 'log-ok' : 'log-err');
+  try {
+    const H = (b) => hex(b).replace(/ /g, '');
+    const checks = [
+      H(md5(strToBytes(''))) === 'd41d8cd98f00b204e9800998ecf8427e',
+      H(md5(strToBytes('abc'))) === '900150983cd24fb0d6963f7d28e17f72',
+      H(AES.encryptBlockRaw(hexToBytes('00112233445566778899aabbccddeeff'), hexToBytes('000102030405060708090a0b0c0d0e0f'))) === '69c4e0d86a7b0430d8cdb78070b4c55a',
+      H(AES.decryptEcb(hexToBytes('69c4e0d86a7b0430d8cdb78070b4c55a'), hexToBytes('000102030405060708090a0b0c0d0e0f'))) === '00112233445566778899aabbccddeeff',
+      crc16Modbus(strToBytes('123456789')).toString(16).padStart(4, '0') === '4b37',
+      hex(varint(300)) === 'ac 02',
+      String(readVarint(varint(300), 0)[0]) === '300',
+      hex(encodeDp(4, DP_TYPE.value, 1000, 3)) === '04 02 04 00 00 03 e8'
+    ];
+    return checks.every(Boolean);
+  } catch (e) { return false; }
 }
+const PROTO_OK = runSelfTest();
 
 // --------------------------- Bluetooth-log -> Tuya auth-material extractor (static, local, pre-connect) ---------------------------
 // Pull CANDIDATE Tuya BLE material out of an uploaded capture: a raw btsnoop .log, a .gz, an Android
@@ -1099,7 +1084,7 @@ function initLangSwitch() {
 function applyTheme(dark) {
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
   const b = $('btn-theme');
-  if (b) { b.innerHTML = dark ? '&#9728;' : '&#9790;'; b.setAttribute('aria-label', t(dark ? 'themeToLight' : 'themeToDark')); b.title = b.getAttribute('aria-label'); } // scan-ok: fixed sun/moon glyph, not user input
+  if (b) { b.textContent = dark ? '\u2600' : '\u263E'; b.setAttribute('aria-label', t(dark ? 'themeToLight' : 'themeToDark')); b.title = b.getAttribute('aria-label'); }
   try { localStorage.setItem(LS.theme, dark ? 'dark' : 'light'); } catch (e) {}
 }
 function initTheme() {
@@ -1110,7 +1095,7 @@ function initTheme() {
 
 // --------------------------- help modals ---------------------------
 const HELP = { key: ['keyTitle', 'keyHelp'], schema: ['schemaTitle', 'schemaHelp'], raw: ['rawTitle', 'rawHelp'],
-  boost: ['boostTitle', 'boostHelp'], publiclog: ['publicLogLabel', 'publicLogHelp'], diaglog: ['diagLogLabel', 'diagLogHelp'],
+  boost: ['boostTitle', 'boostHelp'], batt: ['help_batt_t', 'help_batt_b'], publiclog: ['publicLogLabel', 'publicLogHelp'], diaglog: ['diagLogLabel', 'diagLogHelp'],
   logupload: ['lblLogUpload', 'logUploadHelp'], disclaimer: ['footDisclaimer', 'disclaimerText'] };
 function openHelp(key) {
   const m = HELP[key]; if (!m) return;
@@ -1252,8 +1237,6 @@ window.addEventListener('DOMContentLoaded', () => {
   { const b = $('btn-copy-log'); if (b) b.addEventListener('click', copyLog); }
   { const b = $('btn-clear-log'); if (b) b.addEventListener('click', clearLog); }
   { const b = $('btn-save-log'); if (b) b.addEventListener('click', saveLog); }
-  { const b = $('btn-diag'); if (b) b.addEventListener('click', scanAllDevicesDiagnostic); }
-  { const b = $('btn-selftest'); if (b) b.addEventListener('click', runSelfTest); }
   {
     const cb = $('public-log');
     if (cb) { cb.checked = state.publicLog; cb.addEventListener('change', () => { state.publicLog = cb.checked; try { localStorage.setItem(LS.publicLog, cb.checked ? '1' : '0'); } catch (e) {} renderLog(); }); }
@@ -1270,6 +1253,5 @@ window.addEventListener('DOMContentLoaded', () => {
     { const b = $('confirm-x'); if (b) b.addEventListener('click', () => done(false)); }
   }
   setStatus(profile().ble ? 'disconnected' : 'no-ble');
-  logHeader();
-  runSelfTest();
+  logDiagnosticHeader();
 });
