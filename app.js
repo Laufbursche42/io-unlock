@@ -9,7 +9,7 @@
  * invented here.
  */
 
-const BUILD = 'v13';
+const BUILD = 'v14';
 const $ = (id) => document.getElementById(id);
 
 const LS = {
@@ -1096,7 +1096,7 @@ function initTheme() {
 // --------------------------- help modals ---------------------------
 const HELP = { key: ['keyTitle', 'keyHelp'], schema: ['schemaTitle', 'schemaHelp'], raw: ['rawTitle', 'rawHelp'],
   boost: ['boostTitle', 'boostHelp'], batt: ['help_batt_t', 'help_batt_b'], publiclog: ['publicLogLabel', 'publicLogHelp'], diaglog: ['diagLogLabel', 'diagLogHelp'],
-  logupload: ['lblLogUpload', 'logUploadHelp'], disclaimer: ['footDisclaimer', 'disclaimerText'] };
+  logupload: ['lblLogUpload', 'logUploadHelp'] };
 function openHelp(key) {
   const m = HELP[key]; if (!m) return;
   const dlg = $('help'); if (!dlg) return;
@@ -1112,6 +1112,7 @@ const DOC_TITLES = {
   'PRIVACY.de.md': 'footPrivacy', 'PRIVACY.md': 'footPrivacy',
   'LICENSE.de.md': 'footLicense', 'LICENSE.md': 'footLicense',
   'TRADEMARKS.de.md': 'footTrademarks', 'TRADEMARKS.md': 'footTrademarks',
+  'DISCLAIMER.de.md': 'footDisclaimer', 'DISCLAIMER.md': 'footDisclaimer',
   'README.md': 'footReadme'
 };
 const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -1183,7 +1184,7 @@ function wireDocViewer() {
     if (!e.target.closest) return;
     const jump = e.target.closest('[data-anchor]');
     if (jump) { e.preventDefault(); const body = $('doc-body'); const target = body && body.querySelector('#' + CSS.escape(jump.getAttribute('data-anchor'))); if (target) body.scrollTop = target.offsetTop - body.offsetTop; return; }
-    const disc = e.target.closest('[data-open-disclaimer]'); if (disc) { e.preventDefault(); openHelp('disclaimer'); return; }
+    const disc = e.target.closest('[data-open-disclaimer]'); if (disc) { e.preventDefault(); openDocFile(docFile('DISCLAIMER'), '', 'footDisclaimer'); return; }
     const a = e.target.closest('[data-doc], [data-docfile]'); if (!a) return;
     e.preventDefault();
     const file = a.getAttribute('data-docfile'); const titleKey = a.getAttribute('data-t') || '';
@@ -1219,7 +1220,7 @@ window.addEventListener('DOMContentLoaded', () => {
   wireDocViewer();
   document.querySelectorAll('.help-btn').forEach((btn) => btn.addEventListener('click', () => openHelp(btn.getAttribute('data-help'))));
   ['help-x', 'help-close'].forEach((id) => { const b = $(id); if (b) b.addEventListener('click', closeHelp); });
-  { const b = $('link-disclaimer'); if (b) b.addEventListener('click', (e) => { e.preventDefault(); openHelp('disclaimer'); }); }
+  { const b = $('link-disclaimer'); if (b) b.addEventListener('click', (e) => { e.preventDefault(); openDocFile(docFile('DISCLAIMER'), '', 'footDisclaimer'); }); }
   { const s = $('model-in'); if (s) s.addEventListener('change', () => { state.model = s.value; try { localStorage.setItem(LS.model, state.model); } catch (e) {} renderModel(); }); }
   { const c = $('btn-conn'); if (c) c.addEventListener('click', () => { if (c.dataset.act === 'disconnect') disconnect(); else connect(); }); }
   { const lf = $('log-in'); if (lf) lf.addEventListener('change', () => { const file = lf.files && lf.files[0]; lf.value = ''; const nm = $('log-name'); if (nm) nm.textContent = file ? file.name : ''; onLogFile(file); }); }
