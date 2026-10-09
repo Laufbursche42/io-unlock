@@ -9,7 +9,7 @@
  * invented here.
  */
 
-const BUILD = 'v12';
+const BUILD = 'v13';
 const $ = (id) => document.getElementById(id);
 
 const LS = {
@@ -1238,12 +1238,16 @@ window.addEventListener('DOMContentLoaded', () => {
   { const b = $('btn-clear-log'); if (b) b.addEventListener('click', clearLog); }
   { const b = $('btn-save-log'); if (b) b.addEventListener('click', saveLog); }
   {
+    const cb = $('showall');
+    if (cb) cb.addEventListener('change', () => { log('show-all-frames: ' + (cb.checked ? 'on' : 'off')); renderLog(); });
+  }
+  {
     const cb = $('public-log');
-    if (cb) { cb.checked = state.publicLog; cb.addEventListener('change', () => { state.publicLog = cb.checked; try { localStorage.setItem(LS.publicLog, cb.checked ? '1' : '0'); } catch (e) {} renderLog(); }); }
+    if (cb) { cb.checked = state.publicLog; cb.addEventListener('change', () => { state.publicLog = cb.checked; try { localStorage.setItem(LS.publicLog, cb.checked ? '1' : '0'); } catch (e) {} log('public-log: ' + (cb.checked ? 'on (anonymizing device name/id)' : 'off')); renderLog(); }); }
   }
   {
     const cb = $('diag-log');
-    if (cb) { cb.checked = false; cb.addEventListener('change', () => { state.diag = cb.checked; log(state.diag ? 'diagnostics on' : 'diagnostics off', 'log-rx'); }); }
+    if (cb) { cb.checked = false; cb.addEventListener('change', () => { state.diag = cb.checked; log('diag-log: ' + (cb.checked ? 'on' : 'off')); }); }
   }
   {
     const dlg = $('confirm');
